@@ -98,6 +98,7 @@ fn txt_filter(save_as string) string {
     {txt = txt.replace(r'<'+tag+r'(.*)>(.*)</'+tag+r'>', '')}
 
 	strip_ls = [
+    'g-img',
     'span',
     'div',
     'br',
@@ -118,6 +119,7 @@ fn txt_filter(save_as string) string {
     txt = txt.replace(r'</'+tag+r'>', '')
   }
 
+  txt = txt.replace(r'<h[1-6](.*)>(.*)</h[1-6]>', r'## \1')
   txt = txt.replace(r'class="(.*)"', '')
 
   return txt
