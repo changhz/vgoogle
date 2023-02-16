@@ -67,7 +67,7 @@ const (
 )
 
 fn list_results(txt string) string {
-  links := String(txt).replace(img_pattern, r'<img src="\1" />').find(link_pattern)
+  links := String(txt).replace(img_pattern, r'![img](\1)').find(link_pattern)
   mut r := ''
   for link in links {
     mut s := String(link).replace(link_pattern, '\\3\n\\1')
