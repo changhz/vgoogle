@@ -14,6 +14,7 @@ fn main() {
   fprs.skip_executable()
 
   image := fprs.bool('image', `m`, false, 'Search image')
+  plain := fprs.bool('plain', `t`, false, 'Plain text (no image)')
   query := fprs.string('query', `q`, '', 'Make a query')
   page := fprs.int('page', `p`, 1, 'Page Number')
 
@@ -23,12 +24,7 @@ fn main() {
     return
   }
 
-  user_agent := '"\
-    Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
-    AppleWebKit/537.36 (KHTML, like Gecko) \
-    Chrome/110.0.0.0 Safari/537.36\
-  "'
-
+	// TODO:
   headers := []string{}
 
   save_as := '$dist/output.html'
@@ -43,18 +39,18 @@ fn main() {
 
   if query != '' {
     cmd := 'curl ${headers.join(" ")} -A $user_agent "$url" -o $save_as'
-    // println(cmd)
 
     os.execute(cmd)
-    // println(res.output)
 
     mut txt := txt_filter(save_as)
-    // os.write_file(save_as, txt) or {panic('ok')}
     os.execute('rm $save_as')
+
+    mut replace_img := r'![ img ](\1)'
+    if plain {replace_img = ''}
+    txt = String(txt).replace(img_pattern, replace_img)
 
     txt = list_results(txt)
 		println(txt)
-    // os.write_file('$dist/search.md', txt) or {panic('hm ....')}
 
     return
   }
@@ -64,6 +60,11 @@ fn main() {
 }
 
 const (
+  user_agent = '"\
+    Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
+    AppleWebKit/537.36 (KHTML, like Gecko) \
+    Chrome/110.0.0.0 Safari/537.36\
+  "'
   dist = '/tmp'
   link_pattern = r'<a(.*)href="(.*)"(.*)>(.*)</a>'
   header_pattern = r'<h[1-6](.*)>(.*)</h[1-6]>'
@@ -71,7 +72,7 @@ const (
 )
 
 fn list_results(txt string) string {
-  links := String(txt).replace(img_pattern, r'![img](\1)').find(link_pattern)
+  links := String(txt).find(link_pattern)
   mut r := ''
   for link in links {
     mut s := String(link).replace(link_pattern, '\\3\n\\1')
