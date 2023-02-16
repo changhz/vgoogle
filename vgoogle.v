@@ -13,6 +13,7 @@ fn main() {
   fprs.description('Google Services')
   fprs.skip_executable()
 
+  image := fprs.bool('image', `m`, false, 'Search image')
   query := fprs.string('query', `q`, '', 'Make a query')
   page := fprs.int('page', `p`, 1, 'Page Number')
 
@@ -32,19 +33,29 @@ fn main() {
 
   save_as := 'dist/output.html'
 
+  mut url := '\
+    https://www.google.com/search\
+    ?q=${query}\
+    &start=${((page-1) * 10).str()}\
+  '
+
+  if image { url += '&tbm=isch' }
+
   if query != '' {
-    url := '"https://www.google.com/search?q=$query&start=${((page-1) * 10).str()}"'
-    cmd := 'curl ${headers.join(" ")} -A $user_agent $url -o $save_as'
+    cmd := 'curl ${headers.join(" ")} -A $user_agent "$url" -o $save_as'
     println(cmd)
 
     res := os.execute(cmd)
     println(res.output)
 
-    txt := treat_txt(save_as)
-
-    list_results(txt)
-
+    txt := txt_filter(save_as)
     os.write_file(save_as, txt) or {panic('ok')}
+
+    mut r := ''
+		if image {r = handle_img(txt)}
+    else {r = list_results(txt)}
+    os.write_file('dist/search.md', r) or {panic('hm ....')}
+
     return
   }
 
@@ -52,33 +63,48 @@ fn main() {
   println(fprs.usage())
 }
 
-fn list_results(txt string) {
-  link_pattern := r'<a(.*)href="(.*)"(.*)>(.*)</a>'
-  header_pattern := r'<h[1-6](.*)>(.*)</h[1-6]>'
+const (
+  link_pattern = r'<a(.*)href="(.*)"(.*)>(.*)</a>'
+  header_pattern = r'<h[1-6](.*)>(.*)</h[1-6]>'
+  img_pattern = r'<img(.*)src="(.*)"(.*)>'
+)
 
+fn handle_img(txt string) string {
   links := String(txt).find(link_pattern)
   mut r := ''
   for link in links {
     mut s := String(link).replace(link_pattern, '\\3\n\\1')
-    s = s.replace(header_pattern, r'\1')
-    r += string( s + '\n\n' )
+    s = s.replace(img_pattern, r'![img](\1)')
+    r += string(s + '\n\n')
   }
-  os.write_file('dist/search.md', r) or {panic('hm ....')}
+  return r
 }
 
-fn treat_txt(save_as string) string {
+fn list_results(txt string) string {
+  links := String(txt).replace(img_pattern, '').find(link_pattern)
+  mut r := ''
+  for link in links {
+    mut s := String(link).replace(link_pattern, '\\3\n\\1')
+    s = s.replace(header_pattern, r'\1')
+    r += string(s + '\n\n')
+  }
+  return r
+}
+
+fn txt_filter(save_as string) string {
   mut txt := String(os.read_file(save_as) or {panic('oh')})
 
-  for tag in ['head', 'style', 'script', 'svg', 'cite', 'g-more-button'] {
-    txt = txt.replace(r'<'+tag+r'(.*)>(.*)</'+tag+r'>', '')
-  }
+  for tag in [
+    'head', 'style', 'script',
+    'svg', 'cite', 'g-more-button',
+  ] {txt = txt.replace(r'<'+tag+r'(.*)>(.*)</'+tag+r'>', '')}
 
-  for tag in ['span', 'div', 'b', 'br', 'hr', 'g-img', 'img'] {
+	mut strip_ls := ['span', 'div', 'b', 'br', 'hr']
+  for tag in strip_ls {
     txt = txt.replace(r'<'+tag+r'(.*)>', '')
     txt = txt.replace(r'</'+tag+r'>', '')
   }
 
-  // txt = txt.replace(r'<img(.*)src="(.*)"(.*)>', r'<img src="\1" />')
   txt = txt.replace(r'class="(.*)"', '')
 
   return txt
