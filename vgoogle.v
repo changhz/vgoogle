@@ -51,10 +51,7 @@ fn main() {
     txt := txt_filter(save_as)
     os.write_file(save_as, txt) or {panic('ok')}
 
-    mut r := ''
-		if image {r = handle_img(txt)}
-    else {r = list_results(txt)}
-    os.write_file('dist/search.md', r) or {panic('hm ....')}
+    os.write_file('dist/search.md', list_results(txt)) or {panic('hm ....')}
 
     return
   }
@@ -69,19 +66,8 @@ const (
   img_pattern = r'<img(.*)src="(.*)"(.*)>'
 )
 
-fn handle_img(txt string) string {
-  links := String(txt).find(link_pattern)
-  mut r := ''
-  for link in links {
-    mut s := String(link).replace(link_pattern, '\\3\n\\1')
-    s = s.replace(img_pattern, r'![img](\1)')
-    r += string(s + '\n\n')
-  }
-  return r
-}
-
 fn list_results(txt string) string {
-  links := String(txt).replace(img_pattern, '').find(link_pattern)
+  links := String(txt).replace(img_pattern, r'<img src="\1" />').find(link_pattern)
   mut r := ''
   for link in links {
     mut s := String(link).replace(link_pattern, '\\3\n\\1')
@@ -94,14 +80,37 @@ fn list_results(txt string) string {
 fn txt_filter(save_as string) string {
   mut txt := String(os.read_file(save_as) or {panic('oh')})
 
-  for tag in [
-    'head', 'style', 'script',
-    'svg', 'cite', 'g-more-button',
-  ] {txt = txt.replace(r'<'+tag+r'(.*)>(.*)</'+tag+r'>', '')}
+	mut strip_ls := []string{}
 
-	mut strip_ls := ['span', 'div', 'b', 'br', 'hr']
+  strip_ls = [
+    'style',
+    'script',
+    'c-wiz',
+    'svg',
+    'cite',
+    'g-more-button',
+  ]
+  for tag in strip_ls
+    {txt = txt.replace(r'<'+tag+r'(.*)>(.*)</'+tag+r'>', '')}
+
+	strip_ls = [
+    'span',
+    'div',
+    'br',
+    'hr',
+    'input',
+    'meta',
+  ]
   for tag in strip_ls {
     txt = txt.replace(r'<'+tag+r'(.*)>', '')
+    txt = txt.replace(r'</'+tag+r'>', '')
+  }
+
+  strip_ls = [
+    'b', 'i', 'strong', 'em'
+  ]
+  for tag in strip_ls {
+    txt = txt.replace(r'<'+tag+r'>', '')
     txt = txt.replace(r'</'+tag+r'>', '')
   }
 
