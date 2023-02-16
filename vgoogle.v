@@ -57,26 +57,28 @@ fn list_results(txt string) {
   header_pattern := r'<h[1-6](.*)>(.*)</h[1-6]>'
 
   links := String(txt).find(link_pattern)
+  mut r := ''
   for link in links {
     mut s := String(link).replace(link_pattern, '\\3\n\\1')
     s = s.replace(header_pattern, r'\1')
-    println(s+'\n')
+    r += string( s + '\n\n' )
   }
+  os.write_file('dist/search.md', r) or {panic('hm ....')}
 }
 
 fn treat_txt(save_as string) string {
   mut txt := String(os.read_file(save_as) or {panic('oh')})
 
-  for tag in ['head', 'style', 'script', 'svg', 'cite'] {
+  for tag in ['head', 'style', 'script', 'svg', 'cite', 'g-more-button'] {
     txt = txt.replace(r'<'+tag+r'(.*)>(.*)</'+tag+r'>', '')
   }
 
-  for tag in ['span', 'div', 'b', 'br', 'hr'] {
+  for tag in ['span', 'div', 'b', 'br', 'hr', 'g-img', 'img'] {
     txt = txt.replace(r'<'+tag+r'(.*)>', '')
     txt = txt.replace(r'</'+tag+r'>', '')
   }
 
-  txt = txt.replace(r'<img(.*)src="(.*)"(.*)>', r'img:\1')
+  // txt = txt.replace(r'<img(.*)src="(.*)"(.*)>', r'<img src="\1" />')
   txt = txt.replace(r'class="(.*)"', '')
 
   return txt
