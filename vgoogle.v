@@ -31,7 +31,7 @@ fn main() {
 
   headers := []string{}
 
-  save_as := 'dist/output.html'
+  save_as := '$dist/output.html'
 
   mut url := '\
     https://www.google.com/search\
@@ -43,15 +43,18 @@ fn main() {
 
   if query != '' {
     cmd := 'curl ${headers.join(" ")} -A $user_agent "$url" -o $save_as'
-    println(cmd)
+    // println(cmd)
 
-    res := os.execute(cmd)
-    println(res.output)
+    os.execute(cmd)
+    // println(res.output)
 
-    txt := txt_filter(save_as)
-    os.write_file(save_as, txt) or {panic('ok')}
+    mut txt := txt_filter(save_as)
+    // os.write_file(save_as, txt) or {panic('ok')}
+    os.execute('rm $save_as')
 
-    os.write_file('dist/search.md', list_results(txt)) or {panic('hm ....')}
+    txt = list_results(txt)
+		println(txt)
+    // os.write_file('$dist/search.md', txt) or {panic('hm ....')}
 
     return
   }
@@ -61,6 +64,7 @@ fn main() {
 }
 
 const (
+  dist = '/tmp'
   link_pattern = r'<a(.*)href="(.*)"(.*)>(.*)</a>'
   header_pattern = r'<h[1-6](.*)>(.*)</h[1-6]>'
   img_pattern = r'<img(.*)src="(.*)"(.*)>'
