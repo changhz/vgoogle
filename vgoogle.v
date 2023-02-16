@@ -10,7 +10,7 @@ fn main() {
   mut fprs := flag.new_flag_parser(os.args)
   fprs.application('vgoogle')
   fprs.version('0.0.1')
-  fprs.description('Google Services')
+  fprs.description('google search on terminal')
   fprs.skip_executable()
 
   image := fprs.bool('image', `m`, false, 'Search image')
