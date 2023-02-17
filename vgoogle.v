@@ -13,6 +13,7 @@ fn main() {
   fprs.description('google search on terminal')
   fprs.skip_executable()
 
+  news := fprs.bool('news', `n`, false, 'Search news')
   image := fprs.bool('image', `m`, false, 'Search image')
   plain := fprs.bool('plain', `t`, false, 'Plain text (no image)')
   query := fprs.string('query', `q`, '', 'Make a query')
@@ -35,7 +36,10 @@ fn main() {
     &start=${((page-1) * 10).str()}\
   '
 
-  if image { url += '&tbm=isch' }
+	mut tab := ''
+  if image { tab = 'isch' }
+  if news { tab = 'nws' }
+  if tab != '' { url += '&tbm=$tab' }
 
   if query != '' {
     cmd := 'curl ${headers.join(" ")} -A $user_agent "$url" -o $save_as'
@@ -108,7 +112,7 @@ fn txt_filter(save_as string) string {
     'meta',
   ]
   for tag in strip_ls {
-    txt = txt.replace(r'<'+tag+r'(.*)>', '')
+    txt = txt.replace(r'<'+tag+r'(.*)>', '\n')
     txt = txt.replace(r'</'+tag+r'>', '')
   }
 
@@ -116,7 +120,7 @@ fn txt_filter(save_as string) string {
     'b', 'i', 'strong', 'em'
   ]
   for tag in strip_ls {
-    txt = txt.replace(r'<'+tag+r'>', '')
+    txt = txt.replace(r'<'+tag+r'>', '\n')
     txt = txt.replace(r'</'+tag+r'>', '')
   }
 
