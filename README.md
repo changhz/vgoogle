@@ -7,19 +7,25 @@ made with [vcli](https://github.com/changhz/vcli)
 2. Clone this repo and `cd` into it
 3. Run `v .` to compile as an executable
 
-## Example Usage
+## Examples
+
+display search result as plain text `-t` on your terminal, navigate with `less`
 ``` sh
-# search keyword `vlang doc` and print the result in `Markdown` format
+vgoogle -t -q news | less
+```
+
+search keyword `vlang doc` and print the result in `Markdown` format
+``` sh
 vgoogle -q vlang+doc
 ```
 
+save the search result
 ``` sh
-# save the search result
 vgoogle -q vlang+doc > search.md
 ```
 
+perform image search
 ``` sh
-# perform image search
 vgoogle -q beautiful+sky -m
 ```
 
