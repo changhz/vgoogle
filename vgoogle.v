@@ -15,8 +15,6 @@ fn main() {
 
 	news := fprs.bool('news', `n`, false, 'Search news')
 	image := fprs.bool('image', `m`, false, 'Search image')
-	plain := fprs.bool('plain', `t`, false, 'Plain text (no image)')
-	query := fprs.string('query', `q`, '', 'Make a query')
 	page := fprs.int('page', `p`, 1, 'Page Number')
 
 	additional_args := fprs.finalize() or {
@@ -24,6 +22,8 @@ fn main() {
 		println(fprs.usage())
 		return
 	}
+
+	query := additional_args.join('+')
 
 	// TODO:
 	headers := []string{}
@@ -49,8 +49,8 @@ fn main() {
 		mut txt := txt_filter(save_as)
 		os.execute('rm $save_as')
 
-		mut replace_img := r'![ img ](\1)'
-		if plain {replace_img = ''}
+		mut replace_img := ''
+		if image {replace_img = r'![ img ](\1)'}
 		txt = String(txt).replace(img_pattern, replace_img)
 
 		txt = list_results(txt)
@@ -59,7 +59,6 @@ fn main() {
 		return
 	}
 
-	println(additional_args.join_lines())
 	println(fprs.usage())
 }
 
