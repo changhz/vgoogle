@@ -9,7 +9,7 @@ const abort_key = ':q'
 fn main() {
   mut fprs := flag.new_flag_parser(os.args)
   fprs.application('vgoogle')
-  fprs.version('0.0.1')
+  fprs.version('0.1.0')
   fprs.description('google search on terminal')
   fprs.skip_executable()
 
