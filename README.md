@@ -2,35 +2,35 @@
 google search on terminal
 made with [vcli](https://github.com/changhz/vcli)
 
-## Installation
+# Installation
 1. Install [vlang](https://github.com/vlang/v)
 2. Clone this repo and `cd` into it
 3. Run `v .` to compile as an executable
 
-## Examples
+# Examples
 
-display search result as plain text `-t` on your terminal, navigate with `less`
+display search result on your terminal, navigate with `less`
 ``` sh
-vgoogle -t -q news | less
-```
-
-search keyword `vlang doc` and print the result in `Markdown` format
-``` sh
-vgoogle -q vlang+doc
+vgoogle world news | less
 ```
 
 save the search result
 ``` sh
-vgoogle -q vlang+doc > search.md
+vgoogle vlang doc > search.md
 ```
 
-perform image search
+perform image search with `-m` flag
 ``` sh
-vgoogle -q beautiful+sky -m
+vgoogle beautiful sky -m
 ```
 
-## Contribution
+# Contribution
 Anyone is welcome to report issues or make pull requests. Thank you.
 
-## Version
-0.0.1
+# Version
+0.1.0
+
+# Changelog
+## 0.1.0
+- default plain text search (no image)
+- updated README.md
